@@ -16,3 +16,4 @@ class LanguageAdmin(admin.ModelAdmin):
 admin.site.register(City, CityAdmin)
 admin.site.register(Language, LanguageAdmin)
 admin.site.register(Vacancy)
+admin.site.register(Error)

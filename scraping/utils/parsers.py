@@ -3,7 +3,7 @@ import json          # Для обработки полученных резул
 import time          # Для задержки между запросами
 
 
-def hh_parser(url):
+def hh_parser(url, city, language):
     # Результирующий список вакансий
     vacancy = []
     errors = []
@@ -11,8 +11,41 @@ def hh_parser(url):
     # список со ссылками на вакансии
     job_urls = []
 
+    # Получение городов
+    def getAreas():
+        req = requests.get('https://api.hh.ru/areas')
+        data = req.content.decode()
+        req.close()
+        jsObj = json.loads(data)
+        rus = []
+        # Получение страны Россия
+        for obj in jsObj:
+            if obj.get('id') == '113':
+                rus = obj.get('areas')
+
+        # список кортежей ('id', 'Город')
+        areas = []
+
+        def recurse(area_list):
+            for area in area_list:
+                if len(area.get('areas')) > 0:
+                    areas.append((area.get('id'), area.get('name')))
+                    recurse(area.get('areas'))
+                else:
+                    areas.append((area.get('id'), area.get('name')))
+
+        recurse(rus)
+
+        return areas
+
+    city_id = 1 # по умолчанию Москва
+
+    for k in getAreas():
+        if k[1] == city:
+            city_id = k[0]
+
     # Получение страницы с вакансиями
-    def getPage(keyword, page_number=0):
+    def getPage(keyword, area, page_number=0):
         """
         Создаем метод для получения страницы со списком вакансий.
         Аргументы:
@@ -22,7 +55,7 @@ def hh_parser(url):
         # Справочник для параметров GET-запроса
         params = {
             'text': keyword,  # Текст фильтра. В имени должно быть слово "Язык программирования"
-            'area': 2,  # Поиск осуществляется по вакансиям города Санкт-Петербург
+            'area': area,  # Поиск осуществляется по вакансиям города Санкт-Петербург
             'page': page_number,  # Номер страницы поиска на HH
             'per_page': 100,  # Кол-во вакансий на 1 странице
             'search_field': 'name'
@@ -48,7 +81,7 @@ def hh_parser(url):
     # Считываем первые 2000 вакансий
     for page in range(0, 20):
         # Преобразуем текст ответа запроса в справочник Python
-        js_obj = json.loads(getPage('Python', page))
+        js_obj = json.loads(getPage(language, city_id, page))
 
         # Формируем список ссылок на каждую вакансию
         for obj in js_obj.get('items'):
@@ -73,8 +106,8 @@ def hh_parser(url):
                 'url': js_obj.get('alternate_url'),
                 'company': js_obj.get('employer').get('name'),
                 'description': js_obj.get('description'),
-                # 'city': jsonObj.get('area').get('name'),
-                # 'language': 'Python'  # исправить на входные параметры
+                'city': js_obj.get('area').get('name'),
+                'language': language
             })
             count += 1
             print(f'{count} из {len_jobs} вакансий записана')

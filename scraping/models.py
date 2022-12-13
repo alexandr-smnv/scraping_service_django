@@ -3,6 +3,13 @@ from django.db import models
 # Create your models here.
 
 
+def default_urls():
+    return {
+        'hhru': '',
+        'superjob': ''
+    }
+
+
 class City(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name='Название города')
     slug = models.SlugField(max_length=50, blank=True)
@@ -51,3 +58,14 @@ class Error(models.Model):
     class Meta:
         verbose_name = 'Ошибка'
         verbose_name_plural = 'Ошибки'
+
+
+class Url(models.Model):
+    city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='Город')
+    language = models.ForeignKey(Language, on_delete=models.CASCADE, verbose_name='Язык программирования')
+    url_data = models.JSONField(default=default_urls)
+
+    class Meta:
+        # уникальная совокупность полей (не может быть создано 2 экземпляра с одинаковыми указанными полями)
+        unique_together = ('city', 'language')
+

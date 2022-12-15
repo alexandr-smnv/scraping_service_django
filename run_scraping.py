@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import sys
@@ -49,24 +50,40 @@ def get_urls(_settings):
     return urls
 
 
+async def main(value):
+    func, url, city, language = value
+    job, err = await loop.run_in_executor(None, func, url, city, language)
+    errors.extend(err)
+    vacancy.extend(job)
+
 settings = get_settings()
 url_list = get_urls(settings)
 
-import time
-start = time.time()
 vacancy = []
 errors = []
+
+loop = asyncio.get_event_loop()
+tmp_tasks = []
 
 for data in url_list:
     city = City.objects.get(id=data['city'])
     language = Language.objects.get(id=data['language'])
     for func, key in parsers:
-        url = data['url_data'][key]
-        v, e = func(url, [data['city'], str(city)], [data['language'], str(language)])
-        vacancy += v
-        errors += e
+        tmp_tasks.append((func, data['url_data'][key], [data['city'], str(city)], [data['language'], str(language)]))
 
-print(time.time()-start)
+tasks = asyncio.wait([loop.create_task(main(f)) for f in tmp_tasks])
+
+loop.run_until_complete(tasks)
+loop.close()
+
+# for data in url_list:
+#     city = City.objects.get(id=data['city'])
+#     language = Language.objects.get(id=data['language'])
+#     for func, key in parsers:
+#         url = data['url_data'][key]
+#         v, e = func(url, [data['city'], str(city)], [data['language'], str(language)])
+#         vacancy += v
+#         errors += e
 
 for job in vacancy:
     try:

@@ -5,9 +5,6 @@ from .forms import FindForm
 from .models import *
 
 
-# Create your views here.
-
-
 def home_view(request):
     form = FindForm()
 
@@ -44,3 +41,5 @@ def list_view(request):
         context['object_list'] = page_obj
 
     return render(request, 'scraping/list_view.html', context)
+
+

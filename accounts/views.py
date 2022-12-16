@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 
-from accounts.forms import UserLoginForm
+from accounts.forms import UserLoginForm, UserRegistrationForm
 
 
 def login_view(request):
@@ -23,3 +23,17 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+
+def register_view(request):
+    form = UserRegistrationForm(request.POST or None)
+    if form.is_valid():
+        # commit - предзапись пользователя
+        new_user = form.save(commit=False)
+        # шифрование пользователя
+        new_user.set_password(form.cleaned_data['password'])
+        # сохранение пользователя
+        new_user.save()
+        return render(request, 'accounts/register_done.html', {'new_user': new_user})
+
+    return render(request, 'accounts/register.html', {'form': form})

@@ -21,7 +21,7 @@ User = get_user_model()
 
 # список парсеров
 parsers = (
-    (hh_parser, 'hhru'),
+    # (hh_parser, 'hhru'),
     (superjob_parser, 'superjob'),
 )
 
@@ -40,12 +40,12 @@ def get_urls(_settings):
     # формирование объекта { ('city_id', 'language_id'): {'hhru': 'url', ... }
     url_dct = {(q['city_id'], q['language_id']): q['url_data'] for q in qs}
     urls = []
+    print(_settings)
     for pair in _settings:
-        tmp = {
-            'city': pair[0],
-            'language': pair[1],
-            'url_data': url_dct[pair]
-        }
+        tmp = {}
+        tmp['city'] = pair[0]
+        tmp['language'] = pair[1]
+        tmp['url_data'] = url_dct[pair]
         urls.append(tmp)
     return urls
 
@@ -85,20 +85,20 @@ loop.close()
 #         vacancy += v
 #         errors += e
 
-for job in vacancy:
-    try:
-        print(job)
-        v = Vacancy(**job)
-        v.save()
-    except:
-        print('Ошибка при записи в БД')
-
-if errors:
-    try:
-        er = Error(data=errors)
-        er.save()
-    except:
-        print('Ошибка при записи в БД')
+# for job in vacancy:
+#     try:
+#         print(job)
+#         v = Vacancy(**job)
+#         v.save()
+#     except:
+#         print('Ошибка при записи в БД')
+#
+# if errors:
+#     try:
+#         er = Error(data=errors)
+#         er.save()
+#     except:
+#         print('Ошибка при записи в БД')
 
 
 with open('vacancies.json', 'w', encoding='utf-8') as file:

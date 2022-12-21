@@ -24,4 +24,24 @@
     </div>
   </div>
 
+    <div class="row my-5">
+    <div class="col-md-8 mx-auto">
+      <p class="text-center my-2">Если Вы не нашли подходящий набор: Город, Специальность,
+        Вы можете заполнить форму ниже с Вашими пожеланиями. После того, как необходимые
+        данные будут добавлены, Вы получите письмо на указанный Вами email.</p>
+      <form action="{% url 'accounts:contact' %}" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+          {{ contact_form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить</button>
+      </form>
+
+      <form action="{% url 'accounts:delete' %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger my-2">Удалить</button>
+      </form>
+    </div>
+  </div>
+
 {% endblock content %}

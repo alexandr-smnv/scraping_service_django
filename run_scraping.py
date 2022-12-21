@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import sys
+import datetime
 
 from django.contrib.auth import get_user_model
 
@@ -40,13 +41,13 @@ def get_urls(_settings):
     # формирование объекта { ('city_id', 'language_id'): {'hhru': 'url', ... }
     url_dct = {(q['city_id'], q['language_id']): q['url_data'] for q in qs}
     urls = []
-    print(_settings)
     for pair in _settings:
-        tmp = {}
-        tmp['city'] = pair[0]
-        tmp['language'] = pair[1]
-        tmp['url_data'] = url_dct[pair]
-        urls.append(tmp)
+        if pair in url_dct:
+            tmp = {}
+            tmp['city'] = pair[0]
+            tmp['language'] = pair[1]
+            tmp['url_data'] = url_dct[pair]
+            urls.append(tmp)
     return urls
 
 
@@ -76,29 +77,39 @@ tasks = asyncio.wait([loop.create_task(main(f)) for f in tmp_tasks])
 loop.run_until_complete(tasks)
 loop.close()
 
-# for data in url_list:
-#     city = City.objects.get(id=data['city'])
-#     language = Language.objects.get(id=data['language'])
-#     for func, key in parsers:
-#         url = data['url_data'][key]
-#         v, e = func(url, [data['city'], str(city)], [data['language'], str(language)])
-#         vacancy += v
-#         errors += e
+for data in url_list:
+    city = City.objects.get(id=data['city'])
+    language = Language.objects.get(id=data['language'])
+    for func, key in parsers:
+        url = data['url_data'][key]
+        v, e = func(url, [data['city'], str(city)], [data['language'], str(language)])
+        vacancy += v
+        errors += e
 
-# for job in vacancy:
-#     try:
-#         print(job)
-#         v = Vacancy(**job)
-#         v.save()
-#     except:
-#         print('Ошибка при записи в БД')
-#
-# if errors:
-#     try:
-#         er = Error(data=errors)
-#         er.save()
-#     except:
-#         print('Ошибка при записи в БД')
+for job in vacancy:
+    try:
+        print(job)
+        v = Vacancy(**job)
+        v.save()
+    except:
+        print('Ошибка при записи в БД')
+
+if errors:
+    try:
+        # проверка наличия данных за сегодня
+        qs_errors = Error.objects.filter(timestamp=datetime.date.today())
+        # если сегодня уже записи об ошибках есть
+        if qs_errors.exists():
+            # получаем экземпляр класса (в списке он будет всегда один, т.к. фильтруем по дате)
+            err = qs_errors.first()
+            # обновляем объект
+            err.data.update({'errors': errors})
+            # сохраняем в БД
+            err.save()
+        else:
+            er = Error(data={'errors': errors}).save()
+    except:
+        print('Ошибка при записи в БД')
 
 
 with open('vacancies.json', 'w', encoding='utf-8') as file:

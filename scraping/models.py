@@ -57,7 +57,7 @@ class Error(models.Model):
     data = models.JSONField()
 
     def __str__(self):
-        return self.timestamp
+        return str(self.timestamp)
 
     class Meta:
         verbose_name = 'Ошибка'

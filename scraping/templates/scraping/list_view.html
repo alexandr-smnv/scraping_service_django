@@ -5,15 +5,41 @@
 {% endblock title %}
 
 {% block content %}
+
   {% for obj in object_list %}
     <div class="card my-3">
       <div class="card-header">
-        <a href="{{ obj.url }}">{{ obj.title }}</a>
+        <h3 class="my-0">{{ obj.title }}</h3>
+        <div class="mt-3">
+          {% if obj.salary.from %}
+            <h5 style="display: inline">от {{ obj.salary.from }}</h5>
+          {% endif %}
+          {% if obj.salary.to %}
+            <h5 style="display: inline">до {{ obj.salary.to }}</h5>
+          {% endif %}
+          {% if obj.salary.currency == "USD" %}
+            <h5 style="display: inline">USD</h5>
+          {% elif obj.salary.currency == "RUR" or obj.salary.currency == 'rub' %}
+            <h5 style="display: inline">RUB</h5>
+          {% endif %}
+        </div>
+
       </div>
       <div class="card-body">
-        <h4>{{ obj.company }}</h4>
-        <p class="card-text">{{ obj.description|truncatewords:10 }}</p>
-        <p>{{ obj.city.name }} | {{ obj.language.name }} | <small>{{ obj.timestamp|date:"d-m-Y" }}</small></p>
+
+
+        {% autoescape off %}
+          <p class="card-text">{{ obj.description|truncatewords_html:20 }}</p>
+          <hr>
+        {% endautoescape %}
+
+        <h5>{{ obj.company }} &#9989</h5>
+
+        <h6>Вакансия на: <a href="{{ obj.url }}">{{ obj.from_recurse }}</a></h6>
+
+        <p>{{ obj.city.name }} | {{ obj.language.name }} | <small>{{ obj.published_at|date:"d-m-Y" }}</small></p>
+
+        <a href="{% url 'detail' obj.id %}" class="btn btn-primary">Подробнее</a>
       </div>
     </div>
   {% empty %}

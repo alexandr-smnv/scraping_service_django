@@ -1,4 +1,5 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from .forms import FindForm
@@ -42,4 +43,12 @@ def list_view(request):
 
     return render(request, 'scraping/list_view.html', context)
 
+
+def detail_view(request, vacancy_id):
+    vacancy = Vacancy.objects.get(id=vacancy_id)
+
+    def get_success_url(self,request):
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+    return render(request, 'scraping/detail_view.html', {'vacancy': vacancy, 'get_success_url': get_success_url})
 

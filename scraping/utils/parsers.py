@@ -1,3 +1,4 @@
+import datetime
 import requests      # Для запросов по API
 import json          # Для обработки полученных результатов
 import time          # Для задержки между запросами
@@ -51,7 +52,6 @@ def hh_parser(url, city, language):
         except requests.exceptions.RequestException as error:
             print("OOps: Something Else", error)
             errors.append({'url': url, 'error': error})
-
 
     city_id = None
 
@@ -116,11 +116,16 @@ def hh_parser(url, city, language):
             js_obj = json.loads(data)
             req.close()
 
+            published_at = datetime.datetime.strptime(js_obj.get('published_at')[0:10], "%Y-%m-%d")
+
             vacancy.append({
                 'title': js_obj.get('name'),
                 'url': js_obj.get('alternate_url'),
                 'company': js_obj.get('employer').get('name'),
                 'description': js_obj.get('description'),
+                'from_recurse': 'hhru',
+                'published_at': published_at,
+                'salary': js_obj.get('salary') if js_obj.get('salary') else None,
                 'city_id': city[0],
                 'language_id': language[0]
             })
@@ -226,20 +231,28 @@ def superjob_parser(url, city, language):
         return all_objects
 
     for vac in get_all_objects():
+        publish = datetime.date.fromtimestamp(int(vac.get('date_published')))
+
+        salary = None
+        if vac.get('payment_from') > 0 or vac.get('payment_to') > 0:
+            salary = {
+                'from': vac.get('payment_from'),
+                'to': vac.get('payment_to'),
+                'currency': vac.get('currency')
+            }
 
         vacancy.append({
             'title': vac.get('profession'),
             'url': vac.get('link'),
             'company': vac.get('client').get('title'),
             'description': vac.get('vacancyRichText'),
+            'from_recurse': 'superjob',
+            'published_at': publish,
+            'salary': salary,
             'city_id': city[0],
             'language_id': language[0]  # исправить на входные параметры
         })
 
     print('Количество собранных вакансий:', len(vacancy))
-
-    # Запись в json
-    with open('vacancies.json', 'w', encoding='utf-8') as file:
-        json.dump(vacancy, file, indent=4, ensure_ascii=False)
 
     return vacancy, errors

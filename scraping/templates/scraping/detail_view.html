@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+  <a onclick="history.back();" class="btn btn-secondary">&larr; К вакансиям</a>
+
+    <div class="my-3 shadow p-3 bg-white rounded">
+      <div class="card-header">
+        <h3 class="mb-3">{{ vacancy.title }}</h3>
+        {% if vacancy.salary.from %}
+            <h5 style="display: inline">от {{ vacancy.salary.from }}</h5>
+        {% endif %}
+        {% if vacancy.salary.to %}
+            <h5 style="display: inline">до {{ vacancy.salary.to }}</h5>
+        {% endif %}
+        {% if vacancy.salary.currency == "USD" %}
+            <h5 style="display: inline">USD</h5>
+        {% elif vacancy.salary.currency == "RUR" or vacancy.salary.currency == 'rub' %}
+            <h5 style="display: inline">RUB</h5>
+        {% endif %}
+
+        <p class="my-2"><small>{{ vacancy.city.name }}</small></p>
+
+      </div>
+
+
+      <div class="card-body">
+
+
+        {% autoescape off %}
+          <p class="card-text">{{ vacancy.description }}</p>
+          <hr>
+        {% endautoescape %}
+
+        <h5>{{ vacancy.company }} &#9989</h5>
+
+        <h6>Вакансия на: <a href="{{ vacancy.url }}">{{ vacancy.from_recurse }}</a></h6>
+
+        <p class="text-secondary">Вакансия опубликована: {{ vacancy.published_at|date:"j E Y" }}</p>
+
+        <a class="btn btn-success" href="{{ vacancy.url }}">Перейти к оригиналу</a>
+      </div>
+    </div>
+
+
+{% endblock content %}

@@ -1,3 +1,5 @@
+from ckeditor.widgets import CKEditorWidget
+from django import forms
 from django.contrib import admin
 
 from .models import *
@@ -11,6 +13,7 @@ class CityAdmin(admin.ModelAdmin):
 
 class LanguageAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
+
 
 
 admin.site.register(City, CityAdmin)

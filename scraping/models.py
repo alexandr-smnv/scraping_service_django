@@ -1,4 +1,5 @@
 from django.db import models
+from ckeditor.fields import RichTextField
 
 # Create your models here.
 
@@ -38,10 +39,13 @@ class Vacancy(models.Model):
     title = models.CharField(max_length=250, verbose_name='Заголовок вакансии')
     url = models.URLField(unique=True)
     company = models.CharField(max_length=250, verbose_name='Компания')
-    description = models.TextField(verbose_name='Описание вакансии')
+    description = RichTextField(verbose_name='Описание вакансии')
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='Город')
     language = models.ForeignKey(Language, on_delete=models.CASCADE, verbose_name='Язык программирования')
     timestamp = models.DateField(auto_now_add=True)
+    published_at = models.DateField(blank=True, null=True)
+    from_recurse = models.CharField(max_length=50, verbose_name='Ресурс', blank=True, null=True)
+    salary = models.JSONField(default=None, null=True)
 
     class Meta:
         verbose_name = 'Вакансия'

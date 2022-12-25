@@ -22,7 +22,7 @@ User = get_user_model()
 
 # список парсеров
 parsers = (
-    # (hh_parser, 'hhru'),
+    (hh_parser, 'hhru'),
     (superjob_parser, 'superjob'),
 )
 
@@ -77,14 +77,16 @@ tasks = asyncio.wait([loop.create_task(main(f)) for f in tmp_tasks])
 loop.run_until_complete(tasks)
 loop.close()
 
-for data in url_list:
-    city = City.objects.get(id=data['city'])
-    language = Language.objects.get(id=data['language'])
-    for func, key in parsers:
-        url = data['url_data'][key]
-        v, e = func(url, [data['city'], str(city)], [data['language'], str(language)])
-        vacancy += v
-        errors += e
+
+# синхронный сбор вакансий
+# for data in url_list:
+#     city = City.objects.get(id=data['city'])
+#     language = Language.objects.get(id=data['language'])
+#     for func, key in parsers:
+#         url = data['url_data'][key]
+#         v, e = func(url, [data['city'], str(city)], [data['language'], str(language)])
+#         vacancy += v
+#         errors += e
 
 for job in vacancy:
     try:
@@ -112,5 +114,5 @@ if errors:
         print('Ошибка при записи в БД')
 
 
-with open('vacancies.json', 'w', encoding='utf-8') as file:
-    json.dump(vacancy, file, indent=4, ensure_ascii=False)
+# with open('vacancies.json', 'w', encoding='utf-8') as file:
+#     json.dump(vacancy, file, indent=4, ensure_ascii=False)
